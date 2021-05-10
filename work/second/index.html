@@ -29,13 +29,13 @@
       // .fadeOut() 一定時間かけてフェードアウトする。
       $(function(){
         var window=$(".modal"),
-        first=$(".modal-show"),
-        second=window.find(".modal-close");
-        first.on("click",function(){
-          window.fadeIn(1000)
+            first=$(".modal-show"),
+            second=window.find(".modal-close");
+        first.click(function(){
+          window.fadeIn(3000)
         });
-        second.on("click",function(){
-          window.fadeOut(1000)
+        second.click(function(){
+          window.fadeOut(3000)
         });
       });
     </script>

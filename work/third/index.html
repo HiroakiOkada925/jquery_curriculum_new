@@ -32,14 +32,14 @@
       // .removeClass() クラスを削除します。
       $(function(){
         var a=$(".nav"),
-        c=a.find("li"),
-        d=$(".contents"),
-        b=d.find("li");
-        c.on("click",function(){
+            c=a.find("li"),
+            d=$(".contents"),
+            b=d.find("li");
+        c.click(function(){
           var e=$(this).index();
-              b.addClass("is-hidden")
-                .eq(e)
-                .removeClass("is-hidden")
+          b.addClass("is-hidden")
+           .eq(e)
+           .removeClass("is-hidden")//.eq(e)で対応しなかったインデックスのis-hiddenを消す働き？
         })
       });
     </script>
