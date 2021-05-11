@@ -31,15 +31,15 @@
       // .addClass() クラスを追加します。
       // .removeClass() クラスを削除します。
       $(function(){
-        var a=$(".nav"),
-            c=a.find("li"),
-            d=$(".contents"),
-            b=d.find("li");
-        c.click(function(){
+        var nav=$(".nav"),
+            nav_li=nav.find("li"),
+            contents=$(".contents"),
+            contents_li=contents.find("li");
+        nav_li.click(function(){
           var e=$(this).index();
-          b.addClass("is-hidden")
-           .eq(e)
-           .removeClass("is-hidden")//.eq(e)で対応しなかったインデックスのis-hiddenを消す働き？
+          contents_li.addClass("is-hidden")
+                     .eq(e)
+                     .removeClass("is-hidden")
         })
       });
     </script>
