@@ -28,14 +28,14 @@
       // .fadeIn() 一定時間かけてフェードインする。
       // .fadeOut() 一定時間かけてフェードアウトする。
       $(function(){
-        var window=$(".modal"),
-            first=$(".modal-show"),
-            second=window.find(".modal-close");
-        first.click(function(){
-          window.fadeIn(3000)
+        var modal=$(".modal");
+        var open=$(".modal-show");
+        var close=modal.find(".modal-close");
+        open.click(function(){
+          modal.fadeIn(1000)
         });
-        second.click(function(){
-          window.fadeOut(3000)
+        close.click(function(){
+          modal.fadeOut(1000)
         });
       });
     </script>

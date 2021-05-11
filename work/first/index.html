@@ -100,9 +100,9 @@
     });
 // 第7問  id='q7'の子要素をクリックしたら、その要素のインデックス（何番目か）をconsole.log()とalert()を用いて表示させよ。
     $('#q7').find('li').click(function() {
-      var Number = $(this).index();
-      console.log(Number);
-      alert(Number);
+      var number = $(this).index();
+      console.log(number);
+      alert(number);
     });
 // 第8問  id='q8'の要素をhoverしたらlargeというクラスを付与し、hoverが外れたら、クラスを削除せよ。
     $('#q8').hover(function() {
@@ -116,9 +116,9 @@
       console.log(text);
     });
 // 第10問 id='q10'の子要素をクリックしたら、その要素のインデックスと等しいid='q11'の子要素にlargeというクラスを追加せよ。
-    $('#q10').find('li').click(function() {
+    $('#q10').children('li').click(function() {
       var num = $(this).index();
-      $('#q11').find('li').eq(num).addClass('large');
+      $('#q11').children('li').eq(num).addClass('large');
     });
   });
 </script>
