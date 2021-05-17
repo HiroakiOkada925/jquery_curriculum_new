@@ -88,7 +88,7 @@
       //   </div>
       // </div>
       $(function() {
-        $('#js-search-button').on('click',function() {
+        $('.search__btn').on('click',function() {
           var searchWord = $('#js-search-word').val();
           console.log(searchWord);
           $.ajax({
@@ -96,13 +96,20 @@
             type: 'GET',
             datatype: 'json',
             data: {
-              applicationId: appId,
+              applicationId: appid,
               booksGenreId: '001',
               keyword: searchWord,
-            }
+            },
           });
         });
       });
+
+
+
+
+
+
+      
     </script>
   </body>
 </html>
