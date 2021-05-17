@@ -87,6 +87,22 @@
       //     <a class="btn-item" data-js="page-next" href="">次へ</a>
       //   </div>
       // </div>
+      $(function() {
+        $('#js-search-button').on('click',function() {
+          var searchWord = $('#js-search-word').val();
+          console.log(searchWord);
+          $.ajax({
+            url: 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522',
+            type: 'GET',
+            datatype: 'json',
+            data: {
+              applicationId: 'appid',
+              booksGenreId: '001',
+              keyword: searchWord,
+            }
+          });
+        });
+      });
     </script>
   </body>
 </html>
