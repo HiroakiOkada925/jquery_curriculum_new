@@ -97,94 +97,140 @@
       //   </div>
       // </div>
       $(function() {
-    $('.search__btn').on('click', function() {
-      $('.lists').empty();//表示されている要素を空にする。これをしないと複数回検索した時に要素が重複してしまう。
-      var searchWord = $('.search__text__input').val();//検索窓に入れた文字のvalue値を取得するメソッドを変数searchWordに代入する。
-        if(searchWord === '') {//検索窓に何も入っていない時
-        $('.lists').html('<p class="message">文字が入力されていません。</p>');//<ul class="lists"></ul>を<p class="message">文字が入力されていません。</p>に書き換える。
-        return false;//処理を止めるためのreturn false;
-        };
-      $.ajax({//ajaxで楽天ブックスのデータを取得する。
-        url: 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522',//リクエストを送信する先のURLです。省略時は呼び出し元のページに送信します。
-        type: 'GET',//HTTP通信の種類を設定します。
-        datatype: 'json',//"json": JSON形式のデータとして評価し、JavaScriptのオブジェクトに変換します。
-        data: {
-          keyword: searchWord,//検索窓に入れた文字
-          applicationId: appId,
-          booksGenreId: '001',//booksGenreId=001（本）に所属するジャンルのみが指定できます。
-          page: 1,//現在のページ番号
-          hits: 20,//1度に表示する商品数
-          pageCount: 100,//最大100
-        }
-      }).done(function(data) {//データ取得後の動き
-        if(data.hits === 0) {//取得できるデータがなかった時
-          $('.lists').html('<p class="message">検索結果がありませんでした。別のキーワードで検索してください</p>');
-        }
-        $.each(data.Items,function(index,element) {
-          var book = '<li class="lists__item">' +
-                            '<div class="lists__item__inner">' +
-                              '<a href="'+ element.Item.itemUrl +'"class="lists__item__link" target="_blank">' +//httpsではじまる商品ごとのURLを取得できる。（api参照）
-                                '<img src="'+ element.Item.mediumImageUrl +'" class="lists__item__img" alt="">' +//httpsではじまる商品画像(128x128ピクセル)のURL
-                                '<p class="lists__item__detail">作品名：'+ element.Item.title +'</p>' +//書籍タイトル
-                                '<p class="lists__item__detail">作者：'+ element.Item.author +'</p>' +//著者名
-                                '<p class="lists__item__detail">出版社：'+ element.Item.publisherName +'</p>' +//出版社名
-                              '</a>' +
-                            '</div>' +
-                          '</li>';
-          $('.lists').append(book);//20件まで一つずつ要素を後ろに追加するために.appendを使用している。.appendは親要素の中身の後ろに子要素を追加するメソッド。
-        })
-      }).fail(function(data) {//データを取得できなかった時の処理。
-        $('.lists').html('<p class="message">データ通信ができませんでした。接続を確認してください。</p>');
-      });
-    });
-    $('.btn-wrapper a:first').on('click',function(){
-      alert('前へ');
-    });
-    $('.btn-wrapper a:last').on('click',function(){
-      alert('次へ');
-      $.ajax({
-        url: 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522',
-        type: 'GET',
-        datatype: 'json',
-        data: {
-          keyword: searchWord,
-          applicationId: appId,
-          booksGenreId: '001',
-          page: 2,
-          hits: 20,
-          pageCount: 100,
-        }
-      }).done(function(data) {
-        if(data.hits === 0) {
-          $('.lists').html('<p class="message">検索結果がありませんでした。別のキーワードで検索してください</p>');
-        }
-        $.each(data.Items,function(index,element) {
-          var book = '<li class="lists__item">' +
-                            '<div class="lists__item__inner">' +
-                              '<a href="'+ element.Item.itemUrl +'"class="lists__item__link" target="_blank">' +
-                                '<img src="'+ element.Item.mediumImageUrl +'" class="lists__item__img" alt="">' +
-                                '<p class="lists__item__detail">作品名：'+ element.Item.title +'</p>' +
-                                '<p class="lists__item__detail">作者：'+ element.Item.author +'</p>' +
-                                '<p class="lists__item__detail">出版社：'+ element.Item.publisherName +'</p>' +
-                              '</a>' +
-                            '</div>' +
-                          '</li>';
-          $('.lists').append(book);
-        })
-      }).fail(function(data) {
-        $('.lists').html('<p class="message">データ通信ができませんでした。接続を確認してください。</p>');
-      });
-      
+        var pageNum = 1;
+        $('.search__btn').on('click', function() {
+          $('.lists').empty();//表示されている要素を空にする。これをしないと複数回検索した時に要素が重複してしまう。
+          var searchWord = $('.search__text__input').val();//検索窓に入れた文字のvalue値を取得するメソッドを変数searchWordに代入する。
+            if(searchWord === '') {//検索窓に何も入っていない時
+            $('.lists').html('<p class="message">文字が入力されていません。</p>');//<ul class="lists"></ul>を<p class="message">文字が入力されていません。</p>に書き換える。
+            return false;//処理を止めるためのreturn false;
+            };
+          $.ajax({//ajaxで楽天ブックスのデータを取得する。
+            url: 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522',//リクエストを送信する先のURLです。省略時は呼び出し元のページに送信します。
+            type: 'GET',//HTTP通信の種類を設定します。
+            datatype: 'json',//"json": JSON形式のデータとして評価し、JavaScriptのオブジェクトに変換します。
+            data: {
+              keyword: searchWord,//検索窓に入れた文字
+              applicationId: appId,
+              booksGenreId: '001',//booksGenreId=001（本）に所属するジャンルのみが指定できます。
+              page: 1,//現在のページ番号
+              hits: 20,//1度に表示する商品数
+              pageCount: 100,//最大100
+            }
+          }).done(function(data) {//データ取得後の動き
+            if(data.hits === 0) {//取得できるデータがなかった時
+              $('.lists').html('<p class="message">検索結果がありませんでした。別のキーワードで検索してください</p>');
+            }
+            $.each(data.Items,function(index,element) {
+              var book = '<li class="lists__item">' +
+                                '<div class="lists__item__inner">' +
+                                  '<a href="'+ element.Item.itemUrl +'"class="lists__item__link" target="_blank">' +//httpsではじまる商品ごとのURLを取得できる。（api参照）
+                                    '<img src="'+ element.Item.mediumImageUrl +'" class="lists__item__img" alt="">' +//httpsではじまる商品画像(128x128ピクセル)のURL
+                                    '<p class="lists__item__detail">作品名：'+ element.Item.title +'</p>' +//書籍タイトル
+                                    '<p class="lists__item__detail">作者：'+ element.Item.author +'</p>' +//著者名
+                                    '<p class="lists__item__detail">出版社：'+ element.Item.publisherName +'</p>' +//出版社名
+                                  '</a>' +
+                                '</div>' +
+                              '</li>';
+              $('.lists').append(book);//20件まで一つずつ要素を後ろに追加するために.appendを使用している。.appendは親要素の中身の後ろに子要素を追加するメソッド。
+              $('.counter').html('<span class="counter-current">'+ pageNum +'</span>/<span class="counter-all">'+ element.Item.pageCount +'</span>')
+            })
+          }).fail(function(data) {//データを取得できなかった時の処理。
+            $('.lists').html('<p class="message">データ通信ができませんでした。接続を確認してください。</p>');
+          });
+        });
 
-    });
-  });
+      
+        
         
 
 
 
 
-
+        $('.btn-wrapper a:first').on('click',function(e){//前へ
+          e.preventDefault()
+          pageNum = pageNum - 1;
+          $('.lists').empty();//表示されている要素を空にする。これをしないと複数回検索した時に要素が重複してしまう。
+          var searchWord = $('.search__text__input').val();//検索窓に入れた文字のvalue値を取得するメソッドを変数searchWordに代入する。
+            if(searchWord === '') {//検索窓に何も入っていない時
+              $('.lists').html('<p class="message">文字が入力されていません。</p>');//<ul class="lists"></ul>を<p class="message">文字が入力されていません。</p>に書き換える。
+              return false;//処理を止めるためのreturn false;
+            };
+          $.ajax({
+            url: 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522',
+            type: 'GET',
+            datatype: 'json',
+            data: {
+              keyword: searchWord,
+              applicationId: appId,
+              booksGenreId: '001',
+              page: pageNum,
+              hits: 20,
+              pageCount: 100,
+            }
+          }).done(function(data) {
+            if(data.hits === 0) {
+              $('.lists').html('<p class="message">検索結果がありませんでした。別のキーワードで検索してください</p>');
+            }
+            $.each(data.Items,function(index,element) {
+              var book = '<li class="lists__item">' +
+                                '<div class="lists__item__inner">' +
+                                  '<a href="'+ element.Item.itemUrl +'"class="lists__item__link" target="_blank">' +
+                                    '<img src="'+ element.Item.mediumImageUrl +'" class="lists__item__img" alt="">' +
+                                    '<p class="lists__item__detail">作品名：'+ element.Item.title +'</p>' +
+                                    '<p class="lists__item__detail">作者：'+ element.Item.author +'</p>' +
+                                    '<p class="lists__item__detail">出版社：'+ element.Item.publisherName +'</p>' +
+                                  '</a>' +
+                                '</div>' +
+                              '</li>';
+              $('.lists').append(book);
+              $('.counter').html('<span class="counter-current">'+ pageNum +'</span>/<span class="counter-all"></span>')
+            })
+          })
+        });
       
+        $('.btn-wrapper a:last').on('click',function(e){//後へ
+          e.preventDefault()
+          pageNum = pageNum + 1;
+          $('.lists').empty();//表示されている要素を空にする。これをしないと複数回検索した時に要素が重複してしまう。
+          var searchWord = $('.search__text__input').val();//検索窓に入れた文字のvalue値を取得するメソッドを変数searchWordに代入する。
+            if(searchWord === '') {//検索窓に何も入っていない時
+            $('.lists').html('<p class="message">文字が入力されていません。</p>');//<ul class="lists"></ul>を<p class="message">文字が入力されていません。</p>に書き換える。
+            return false;//処理を止めるためのreturn false;
+            };
+          $.ajax({
+            url: 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522',
+            type: 'GET',
+            datatype: 'json',
+            data: {
+              keyword: searchWord,
+              applicationId: appId,
+              booksGenreId: '001',
+              page: pageNum,
+              hits: 20,
+              pageCount: 100,
+            }
+          }).done(function(data) {
+            if(data.hits === 0) {
+              $('.lists').html('<p class="message">検索結果がありませんでした。別のキーワードで検索してください</p>');
+            }
+            $.each(data.Items,function(index,element) {
+              var book = '<li class="lists__item">' +
+                                '<div class="lists__item__inner">' +
+                                  '<a href="'+ element.Item.itemUrl +'"class="lists__item__link" target="_blank">' +
+                                    '<img src="'+ element.Item.mediumImageUrl +'" class="lists__item__img" alt="">' +
+                                    '<p class="lists__item__detail">作品名：'+ element.Item.title +'</p>' +
+                                    '<p class="lists__item__detail">作者：'+ element.Item.author +'</p>' +
+                                    '<p class="lists__item__detail">出版社：'+ element.Item.publisherName +'</p>' +
+                                  '</a>' +
+                                '</div>' +
+                              '</li>';
+              $('.lists').append(book);
+              $('.counter').html('<span class="counter-current">'+ pageNum +'</span>/<span class="counter-all"></span>')
+            })
+          })
+        });
+      });
     </script>
   </body>
 </html>
