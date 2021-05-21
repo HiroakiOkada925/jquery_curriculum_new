@@ -97,9 +97,11 @@
       //   </div>
       // </div>
       $(function() {
+        $('.pager').hide();
         var pageNum = 1;
         $('.search__btn').on('click', function() {
           $('.lists').empty();//表示されている要素を空にする。これをしないと複数回検索した時に要素が重複してしまう。
+          $('.pager').show();
           var searchWord = $('.search__text__input').val();//検索窓に入れた文字のvalue値を取得するメソッドを変数searchWordに代入する。
             if(searchWord === '') {//検索窓に何も入っていない時
             $('.lists').html('<p class="message">文字が入力されていません。</p>');//<ul class="lists"></ul>を<p class="message">文字が入力されていません。</p>に書き換える。
@@ -115,7 +117,7 @@
               booksGenreId: '001',//booksGenreId=001（本）に所属するジャンルのみが指定できます。
               page: 1,//現在のページ番号
               hits: 20,//1度に表示する商品数
-              pageCount: 100,//最大100
+              pageCount: searchWord,//最大100
             }
           }).done(function(data) {//データ取得後の動き
             if(data.hits === 0) {//取得できるデータがなかった時
@@ -134,7 +136,9 @@
                               '</li>';
               $('.lists').append(book);//20件まで一つずつ要素を後ろに追加するために.appendを使用している。.appendは親要素の中身の後ろに子要素を追加するメソッド。
               $('.counter').html('<span class="counter-current">'+ pageNum +'</span>/<span class="counter-all">'+ element.Item.pageCount +'</span>')
+              
             })
+            console.log(element.Item)
           }).fail(function(data) {//データを取得できなかった時の処理。
             $('.lists').html('<p class="message">データ通信ができませんでした。接続を確認してください。</p>');
           });
