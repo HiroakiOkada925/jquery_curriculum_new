@@ -99,6 +99,7 @@
       $(function() {
         $('.pager').hide();
         $('.search__btn').on('click', function() {
+          $('.pager').hide();
           $('.lists').empty();//表示されている要素を空にする。これをしないと複数回検索した時に要素が重複してしまう。
           pageNum = 1;
           var searchWord = $('.search__text__input').val();//検索窓に入れた文字のvalue値を取得するメソッドを変数searchWordに代入する。
@@ -106,7 +107,6 @@
             $('.lists').html('<p class="message">文字が入力されていません。</p>');//<ul class="lists"></ul>を<p class="message">文字が入力されていません。</p>に書き換える。
             $('.pager').hide();
             return false;//処理を止めるためのreturn false;
-            
             };
           $.ajax({//ajaxで楽天ブックスのデータを取得する。
             url: 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522',//リクエストを送信する先のURLです。省略時は呼び出し元のページに送信します。
@@ -116,14 +116,13 @@
               keyword: searchWord,//検索窓に入れた文字
               applicationId: appId,
               booksGenreId: '001',//booksGenreId=001（本）に所属するジャンルのみが指定できます。
-              page: 1,//現在のページ番号
+              page: pageNum,//現在のページ番号
               hits: 20,//1度に表示する商品数
               pageCount: searchWord,//最大100
             }
           }).done(function(data) {//データ取得後の動き
             if(data.hits === 0) {//取得できるデータがなかった時
-              $('.lists').html('<p class="message">検索結果がありませんでした。別のキーワードで検索してください</p>');
-              $('.pager').hide();
+              $('.lists').html('<p class="message">検索結果がありませんでした。別のキーワードで検索してください。</p>');
             }else if(data.pageCount === 1){
             $.each(data.Items,function(index,element) {
               var book = '<li class="lists__item">' +
@@ -138,8 +137,10 @@
                               '</li>';
               $('.lists').append(book);//20件まで一つずつ要素を後ろに追加するために.appendを使用している。.appendは親要素の中身の後ろに子要素を追加するメソッド。
               $('.pager').show();
-              $('.btn-wrapper a:first').addClass('disabled');
-              $('.btn-wrapper a:last').addClass('disabled');
+              $('.btn-wrapper a:first').addClass('disabled')
+                                       .css('pointer-events','none');
+              $('.btn-wrapper a:last').addClass('disabled')
+                                      .css('pointer-events','none');
               $('.counter').html('<span class="counter-current">'+ data.page +'</span>/<span class="counter-all">'+ data.pageCount +'</span>')//list要素の外の後ろにページャを追加させる。
             })
             }else {
@@ -156,8 +157,10 @@
                               '</li>';
               $('.lists').append(book);//20件まで一つずつ要素を後ろに追加するために.appendを使用している。.appendは親要素の中身の後ろに子要素を追加するメソッド。
               $('.pager').show();
-              $('.btn-wrapper a:first').addClass('disabled');
-              
+              $('.btn-wrapper a:first').addClass('disabled')
+                                       .css('pointer-events','none');
+              $('.btn-wrapper a:last').removeClass('disabled')
+                                      .css('pointer-events','auto');
               $('.counter').html('<span class="counter-current">'+ data.page +'</span>/<span class="counter-all">'+ data.pageCount +'</span>')//list要素の外の後ろにページャを追加させる。
             })
             }
@@ -189,14 +192,6 @@
               hits: 20,
               pageCount: 100,
             }
-
-
-
-
-
-
-
-
           }).done(function(data) {
             if(data.page === 1) {
               $.each(data.Items,function(index,element) {
@@ -212,8 +207,10 @@
                               '</li>';
               $('.lists').append(book);
               $('.pager').show();
-              $('.btn-wrapper a:first').addClass('disabled');
-              $('.btn-wrapper a:last').removeClass('disabled');
+              $('.btn-wrapper a:first').addClass('disabled')
+                                       .css('pointer-events','none');
+              $('.btn-wrapper a:last').removeClass('disabled')
+                                      .css('pointer-events','auto');
               })
             }else {
               $.each(data.Items,function(index,element) {
@@ -229,7 +226,10 @@
                               '</li>';
               $('.lists').append(book);
               $('.pager').show();
-              $('.btn-wrapper a:first').removeClass('disabled');
+              $('.btn-wrapper a:first').removeClass('disabled')
+                                       .css('pointer-events','auto');
+              $('.btn-wrapper a:last').removeClass('disabled')
+                                      .css('pointer-events','auto');
               })
             }
             $('.counter').html('<span class="counter-current">'+ data.page +'</span>/<span class="counter-all">'+ data.pageCount +'</span>')
@@ -269,8 +269,10 @@
                           '</li>';
               $('.lists').append(book);
               $('.pager').show();
-              $('.btn-wrapper a:first').removeClass('disabled');
-              $('.btn-wrapper a:last').addClass('disabled');
+              $('.btn-wrapper a:first').removeClass('disabled')
+                                       .css('pointer-events','auto');
+              $('.btn-wrapper a:last').addClass('disabled')
+                                      .css('pointer-events','none');
             });
             }else if(data.page>1) {
               $.each(data.Items,function(index,element) {
@@ -286,7 +288,10 @@
                           '</li>';
               $('.lists').append(book);
               $('.pager').show();
-              $('.btn-wrapper a:first').removeClass('disabled');
+              $('.btn-wrapper a:first').removeClass('disabled')
+                                       .css('pointer-events','auto');
+              $('.btn-wrapper a:last').removeClass('disabled')
+                                      .css('pointer-events','auto');
             });
             }
             console.log(data.page);
@@ -294,9 +299,6 @@
             $('.counter').html('<span class="counter-current">'+ data.page +'</span>/<span class="counter-all">'+ data.pageCount +'</span>');
           })
         });
-        
-
-        
       });
     </script>
   </body>
