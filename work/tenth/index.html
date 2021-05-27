@@ -90,16 +90,10 @@
       // </div>
       $(function() {
         var searchWord = ''//空の変数を作る（グローバル変数）
-        var data = ''
         $('.search__btn').on('click',function() {//検索
           reset();
           pageNum = 1;
           searchWord = $('.search__text__input').val();//検索窓に入れた文字のvalue値を取得するメソッドを変数searchWordに代入する。
-          // if(searchWord === '') {//検索窓に何も入っていない時
-          //   $('.lists').html('<p class="message">文字が入力されていません。</p>');//<ul class="lists"></ul>を<p class="message">文字が入力されていません。</p>に書き換える。
-          //   pagerHide();
-          //   return false;//処理を止めるためのreturn false;
-          // };
           search();
         });
 
@@ -108,53 +102,89 @@
           if ($('[data-js="page-prev"]').hasClass('disabled')) {
             return false;
           } else {
-            reset()
+            reset();
             pageNum = pageNum - 1;
             search();
           }
-        })
+        });
 
         $(document).on('click','[data-js="page-next"]',function(e){//後へ
           e.preventDefault();
           if ($('[data-js="page-next"]').hasClass('disabled')) {
             return false;
           } else {
-            reset()
+            reset();
             pageNum = pageNum + 1;
             search();
           }
-        })
+        });
+
+        function books(data) {
+          var book = '';
+          $.each(data.Items,function(index,element) {
+            book = book + '<li class="lists__item">' +
+                            '<div class="lists__item__inner">' +
+                              '<a href="'+ element.Item.itemUrl +'"class="lists__item__link" target="_blank">' +
+                                '<img src="'+ element.Item.mediumImageUrl +'" class="lists__item__img" alt="">' +
+                                '<p class="lists__item__detail">作品名：'+ element.Item.title +'</p>' +
+                                '<p class="lists__item__detail">作者：'+ element.Item.author +'</p>' +
+                                '<p class="lists__item__detail">出版社：'+ element.Item.publisherName +'</p>' +
+                              '</a>' +
+                            '</div>' +
+                          '</li>';
+          });
+          $('.lists').prepend(book);
+        };
 
         function reset() {//要素を空にする
           $('.lists').empty();
           $('.pager-parent').empty();
         };
+
+        function dataZero() {//検索した文字がヒットしなかった時
+          $('.lists').html('<p class="message">検索結果がありませんでした。別のキーワードで検索してください。</p>');
+        };
         
-        function buttonEffect() {
+        function buttonEffect(data) {//条件を満たした時にボタンをグレーにする
           if(data.page === 1){
               $('[data-js="page-prev"]').addClass('disabled')
-            }
-            if(data.page === data.pageCount) {
-              $('[data-js="page-next"]').addClass('disabled')
-            }
-        }
+          }
+          if(data.page === data.pageCount) {
+            $('[data-js="page-next"]').addClass('disabled')
+          }
+        };
 
-        function errorMassage() {
+        function pager(data) {//pagerを作る
+          var pager = '<div class="pager-parent">' +
+                        '<div class="pager" data-js="pager">' +
+                          '<div class="counter">' +
+                            '<span class="counter-current">' + data.page+ '</span>' + '/'+ '<span class="counter-all">' + data.pageCount + '</span>' +
+                          '</div>' +
+                          '<div class="btn-wrapper">' +
+                            '<a class="btn-item" data-js="page-prev" href="">前へ' + '</a>' +
+                            '<a class="btn-item" data-js="page-next" href="">次へ' + '</a>' +
+                          '</div>' +
+                        '</div>' +
+                      '</div>';
+          $('.lists').after(pager);
+        };
+
+        function errorMassage(data) {//エラーメッセージをスイッチ文で分岐
           switch(data.status) {
-              case 400:
-                $('.lists').html('<p class="message">文字が入力されていません。</p>');//検索ワードの指定がないとき
-                break;
-              case 429:
-                $('.lists').html('<p class="message">データ通信ができませんでした。接続を確認してください。</p>');//検索する」を連打したとき
-                break;//「break」文が実行されると「break」文が含まれているブロックの外側へ、つまり「switch」文の次の処理へ進みます
-              case 0:
-                $('.lists').html('<p class="message">インターネットに接続されていません。</p>');//ネットが切れているとき
-                break;
-              default:
+            case 0:
+              $('.lists').html('<p class="message">インターネットに接続されていません。</p>');//ネットが切れているとき
+              break;
+            case 400:
+              $('.lists').html('<p class="message">文字が入力されていません。</p>');//検索ワードの指定がないとき
+              break;
+            case 429:
+              $('.lists').html('<p class="message">データ通信ができませんでした。接続を確認してください。</p>');//検索する」を連打したとき
+              break;//「break」文が実行されると「break」文が含まれているブロックの外側へ、つまり「switch」文の次の処理へ進みます
+            default:
               $('.lists').html('<p class="message">予期せぬエラー</p>');
-            }
-        }
-
+              break;
+          };
+        };
 
         function search() {//検索
           $.ajax({//ajaxで楽天ブックスのデータを取得する。
@@ -170,55 +200,16 @@
             }
           }).done(function(data) {//データ取得後の動き
             if(data.hits === 0) {//取得できるデータがなかった時
-              $('.lists').html('<p class="message">検索結果がありませんでした。別のキーワードで検索してください。</p>');
+              dataZero();
             }else {
-              $.each(data.Items,function(index,element) {
-              var book = '<li class="lists__item">' +
-                            '<div class="lists__item__inner">' +
-                              '<a href="'+ element.Item.itemUrl +'"class="lists__item__link" target="_blank">' +
-                                '<img src="'+ element.Item.mediumImageUrl +'" class="lists__item__img" alt="">' +
-                                '<p class="lists__item__detail">作品名：'+ element.Item.title +'</p>' +
-                                '<p class="lists__item__detail">作者：'+ element.Item.author +'</p>' +
-                                '<p class="lists__item__detail">出版社：'+ element.Item.publisherName +'</p>' +
-                              '</a>' +
-                            '</div>' +
-                          '</li>';
-                          $('.lists').append(book);
-              })
-              
-              var pager = '<div class="pager-parent">' +
-                          '<div class="pager" data-js="pager">' +
-                            '<div class="counter">' +
-                              '<span class="counter-current">' + data.page+ '</span>' + '/'+ '<span class="counter-all">' + data.pageCount + '</span>' +
-                            '</div>' +
-                            '<div class="btn-wrapper">' +
-                              '<a class="btn-item" data-js="page-prev" href="">前へ' + '</a>' +
-                              '<a class="btn-item" data-js="page-next" href="">次へ' + '</a>' +
-                            '</div>' +
-                          '</div>' +
-                        '</div>';
-            $('.lists').after(pager);
-
-
-
-
-            
-            if(data.page === 1){
-              $('[data-js="page-prev"]').addClass('disabled')
+              books(data);
+              pager(data);
+              buttonEffect(data);
             }
-            if(data.page === data.pageCount) {
-              $('[data-js="page-next"]').addClass('disabled')
-            }
-            }
-            
-            
-            
-            
           }).fail(function(data) {
-            console.log(data.status);
-            errorMassage(data.status);
+            errorMassage(data);
           });
-        }
+        };
       });
     </script>
   </body>
