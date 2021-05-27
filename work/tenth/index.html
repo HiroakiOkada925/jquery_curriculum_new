@@ -23,15 +23,7 @@
         </div>
         <div class="message"></div>
         <ul class="lists"></ul>
-        <div class="pager" data-js="pager">
-          <div class="counter">
-            <span class="counter-current"></span>/<span class="counter-all"></span>
-          </div>
-          <div class="btn-wrapper">
-            <a class="btn-item" data-js="page-prev" href="">前へ</a>
-            <a class="btn-item" data-js="page-next" href="">次へ</a>
-          </div>
-        </div>
+        
       </div>
     </div>
     <script src="../../common/js/jquery.js"></script>
@@ -97,17 +89,74 @@
       //   </div>
       // </div>
       $(function() {
-        $('.pager').hide();
-        $('.search__btn').on('click', function() {
-          $('.pager').hide();
-          $('.lists').empty();//表示されている要素を空にする。これをしないと複数回検索した時に要素が重複してしまう。
+        var searchWord = ''//空の変数を作る（グローバル変数）
+        var data = ''
+        $('.search__btn').on('click',function() {//検索
+          reset();
           pageNum = 1;
-          var searchWord = $('.search__text__input').val();//検索窓に入れた文字のvalue値を取得するメソッドを変数searchWordに代入する。
-            if(searchWord === '') {//検索窓に何も入っていない時
-            $('.lists').html('<p class="message">文字が入力されていません。</p>');//<ul class="lists"></ul>を<p class="message">文字が入力されていません。</p>に書き換える。
-            $('.pager').hide();
-            return false;//処理を止めるためのreturn false;
-            };
+          searchWord = $('.search__text__input').val();//検索窓に入れた文字のvalue値を取得するメソッドを変数searchWordに代入する。
+          // if(searchWord === '') {//検索窓に何も入っていない時
+          //   $('.lists').html('<p class="message">文字が入力されていません。</p>');//<ul class="lists"></ul>を<p class="message">文字が入力されていません。</p>に書き換える。
+          //   pagerHide();
+          //   return false;//処理を止めるためのreturn false;
+          // };
+          search();
+        });
+
+        $(document).on('click','[data-js="page-prev"]',function(e){//前へ
+          e.preventDefault();
+          if ($('[data-js="page-prev"]').hasClass('disabled')) {
+            return false;
+          } else {
+            reset()
+            pageNum = pageNum - 1;
+            search();
+          }
+        })
+
+        $(document).on('click','[data-js="page-next"]',function(e){//後へ
+          e.preventDefault();
+          if ($('[data-js="page-next"]').hasClass('disabled')) {
+            return false;
+          } else {
+            reset()
+            pageNum = pageNum + 1;
+            search();
+          }
+        })
+
+        function reset() {//要素を空にする
+          $('.lists').empty();
+          $('.pager-parent').empty();
+        };
+        
+        function buttonEffect() {
+          if(data.page === 1){
+              $('[data-js="page-prev"]').addClass('disabled')
+            }
+            if(data.page === data.pageCount) {
+              $('[data-js="page-next"]').addClass('disabled')
+            }
+        }
+
+        function errorMassage() {
+          switch(data.status) {
+              case 400:
+                $('.lists').html('<p class="message">文字が入力されていません。</p>');//検索ワードの指定がないとき
+                break;
+              case 429:
+                $('.lists').html('<p class="message">データ通信ができませんでした。接続を確認してください。</p>');//検索する」を連打したとき
+                break;//「break」文が実行されると「break」文が含まれているブロックの外側へ、つまり「switch」文の次の処理へ進みます
+              case 0:
+                $('.lists').html('<p class="message">インターネットに接続されていません。</p>');//ネットが切れているとき
+                break;
+              default:
+              $('.lists').html('<p class="message">予期せぬエラー</p>');
+            }
+        }
+
+
+        function search() {//検索
           $.ajax({//ajaxで楽天ブックスのデータを取得する。
             url: 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522',//リクエストを送信する先のURLです。省略時は呼び出し元のページに送信します。
             type: 'GET',//HTTP通信の種類を設定します。
@@ -118,187 +167,58 @@
               booksGenreId: '001',//booksGenreId=001（本）に所属するジャンルのみが指定できます。
               page: pageNum,//現在のページ番号
               hits: 20,//1度に表示する商品数
-              pageCount: searchWord,//最大100
             }
           }).done(function(data) {//データ取得後の動き
             if(data.hits === 0) {//取得できるデータがなかった時
               $('.lists').html('<p class="message">検索結果がありませんでした。別のキーワードで検索してください。</p>');
-            }else if(data.pageCount === 1){
-            $.each(data.Items,function(index,element) {
-              var book = '<li class="lists__item">' +
-                                '<div class="lists__item__inner">' +
-                                  '<a href="'+ element.Item.itemUrl +'"class="lists__item__link" target="_blank">' +//httpsではじまる商品ごとのURLを取得できる。（api参照）
-                                    '<img src="'+ element.Item.mediumImageUrl +'" class="lists__item__img" alt="">' +//httpsではじまる商品画像(128x128ピクセル)のURL
-                                    '<p class="lists__item__detail">作品名：'+ element.Item.title +'</p>' +//書籍タイトル
-                                    '<p class="lists__item__detail">作者：'+ element.Item.author +'</p>' +//著者名
-                                    '<p class="lists__item__detail">出版社：'+ element.Item.publisherName +'</p>' +//出版社名
-                                  '</a>' +
-                                '</div>' +
-                              '</li>';
-              $('.lists').append(book);//20件まで一つずつ要素を後ろに追加するために.appendを使用している。.appendは親要素の中身の後ろに子要素を追加するメソッド。
-              $('.pager').show();
-              $('.btn-wrapper a:first').addClass('disabled')
-                                       .css('pointer-events','none');
-              $('.btn-wrapper a:last').addClass('disabled')
-                                      .css('pointer-events','none');
-              $('.counter').html('<span class="counter-current">'+ data.page +'</span>/<span class="counter-all">'+ data.pageCount +'</span>')//list要素の外の後ろにページャを追加させる。
-            })
             }else {
               $.each(data.Items,function(index,element) {
               var book = '<li class="lists__item">' +
-                                '<div class="lists__item__inner">' +
-                                  '<a href="'+ element.Item.itemUrl +'"class="lists__item__link" target="_blank">' +//httpsではじまる商品ごとのURLを取得できる。（api参照）
-                                    '<img src="'+ element.Item.mediumImageUrl +'" class="lists__item__img" alt="">' +//httpsではじまる商品画像(128x128ピクセル)のURL
-                                    '<p class="lists__item__detail">作品名：'+ element.Item.title +'</p>' +//書籍タイトル
-                                    '<p class="lists__item__detail">作者：'+ element.Item.author +'</p>' +//著者名
-                                    '<p class="lists__item__detail">出版社：'+ element.Item.publisherName +'</p>' +//出版社名
-                                  '</a>' +
-                                '</div>' +
-                              '</li>';
-              $('.lists').append(book);//20件まで一つずつ要素を後ろに追加するために.appendを使用している。.appendは親要素の中身の後ろに子要素を追加するメソッド。
-              $('.pager').show();
-              $('.btn-wrapper a:first').addClass('disabled')
-                                       .css('pointer-events','none');
-              $('.btn-wrapper a:last').removeClass('disabled')
-                                      .css('pointer-events','auto');
-              $('.counter').html('<span class="counter-current">'+ data.page +'</span>/<span class="counter-all">'+ data.pageCount +'</span>')//list要素の外の後ろにページャを追加させる。
-            })
-            }
-          }).fail(function(data) {//データを取得できなかった時の処理。
-            $('.lists').html('<p class="message">データ通信ができませんでした。接続を確認してください。</p>');
-          });
-        });
+                            '<div class="lists__item__inner">' +
+                              '<a href="'+ element.Item.itemUrl +'"class="lists__item__link" target="_blank">' +
+                                '<img src="'+ element.Item.mediumImageUrl +'" class="lists__item__img" alt="">' +
+                                '<p class="lists__item__detail">作品名：'+ element.Item.title +'</p>' +
+                                '<p class="lists__item__detail">作者：'+ element.Item.author +'</p>' +
+                                '<p class="lists__item__detail">出版社：'+ element.Item.publisherName +'</p>' +
+                              '</a>' +
+                            '</div>' +
+                          '</li>';
+                          $('.lists').append(book);
+              })
+              
+              var pager = '<div class="pager-parent">' +
+                          '<div class="pager" data-js="pager">' +
+                            '<div class="counter">' +
+                              '<span class="counter-current">' + data.page+ '</span>' + '/'+ '<span class="counter-all">' + data.pageCount + '</span>' +
+                            '</div>' +
+                            '<div class="btn-wrapper">' +
+                              '<a class="btn-item" data-js="page-prev" href="">前へ' + '</a>' +
+                              '<a class="btn-item" data-js="page-next" href="">次へ' + '</a>' +
+                            '</div>' +
+                          '</div>' +
+                        '</div>';
+            $('.lists').after(pager);
 
 
-        $('.btn-wrapper a:first').on('click',function(e){//前へ
-          $('.pager').hide();
-          e.preventDefault()
-          pageNum = pageNum - 1;
-          $('.lists').empty();//表示されている要素を空にする。これをしないと複数回検索した時に要素が重複してしまう。
-          var searchWord = $('.search__text__input').val();//検索窓に入れた文字のvalue値を取得するメソッドを変数searchWordに代入する。
-            if(searchWord === '') {//検索窓に何も入っていない時
-              $('.lists').html('<p class="message">文字が入力されていません。</p>');//<ul class="lists"></ul>を<p class="message">文字が入力されていません。</p>に書き換える。
-              return false;//処理を止めるためのreturn false;
-            };
-          $.ajax({
-            url: 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522',
-            type: 'GET',
-            datatype: 'json',
-            data: {
-              keyword: searchWord,
-              applicationId: appId,
-              booksGenreId: '001',
-              page: pageNum,
-              hits: 20,
-              pageCount: 100,
+
+
+            
+            if(data.page === 1){
+              $('[data-js="page-prev"]').addClass('disabled')
             }
-          }).done(function(data) {
-            if(data.page === 1) {
-              $.each(data.Items,function(index,element) {
-              var book = '<li class="lists__item">' +
-                                '<div class="lists__item__inner">' +
-                                  '<a href="'+ element.Item.itemUrl +'"class="lists__item__link" target="_blank">' +
-                                    '<img src="'+ element.Item.mediumImageUrl +'" class="lists__item__img" alt="">' +
-                                    '<p class="lists__item__detail">作品名：'+ element.Item.title +'</p>' +
-                                    '<p class="lists__item__detail">作者：'+ element.Item.author +'</p>' +
-                                    '<p class="lists__item__detail">出版社：'+ element.Item.publisherName +'</p>' +
-                                  '</a>' +
-                                '</div>' +
-                              '</li>';
-              $('.lists').append(book);
-              $('.pager').show();
-              $('.btn-wrapper a:first').addClass('disabled')
-                                       .css('pointer-events','none');
-              $('.btn-wrapper a:last').removeClass('disabled')
-                                      .css('pointer-events','auto');
-              })
-            }else {
-              $.each(data.Items,function(index,element) {
-              var book = '<li class="lists__item">' +
-                                '<div class="lists__item__inner">' +
-                                  '<a href="'+ element.Item.itemUrl +'"class="lists__item__link" target="_blank">' +
-                                    '<img src="'+ element.Item.mediumImageUrl +'" class="lists__item__img" alt="">' +
-                                    '<p class="lists__item__detail">作品名：'+ element.Item.title +'</p>' +
-                                    '<p class="lists__item__detail">作者：'+ element.Item.author +'</p>' +
-                                    '<p class="lists__item__detail">出版社：'+ element.Item.publisherName +'</p>' +
-                                  '</a>' +
-                                '</div>' +
-                              '</li>';
-              $('.lists').append(book);
-              $('.pager').show();
-              $('.btn-wrapper a:first').removeClass('disabled')
-                                       .css('pointer-events','auto');
-              $('.btn-wrapper a:last').removeClass('disabled')
-                                      .css('pointer-events','auto');
-              })
-            }
-            $('.counter').html('<span class="counter-current">'+ data.page +'</span>/<span class="counter-all">'+ data.pageCount +'</span>')
-          })
-        });
-      
-        $('.btn-wrapper a:last').on('click',function(e){//後へ
-          $('.pager').hide();
-          e.preventDefault()
-          pageNum = pageNum + 1;
-          $('.lists').empty();//表示されている要素を空にする。これをしないと複数回検索した時に要素が重複してしまう。
-          var searchWord = $('.search__text__input').val();//検索窓に入れた文字のvalue値を取得するメソッドを変数searchWordに代入する。
-          $.ajax({
-            url: 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522',
-            type: 'GET',
-            datatype: 'json',
-            data: {
-              keyword: searchWord,
-              applicationId: appId,
-              booksGenreId: '001',
-              page: pageNum,
-              hits: 20,
-              pageCount: 100,
-            }
-          }).done(function(data) {
             if(data.page === data.pageCount) {
-            $.each(data.Items,function(index,element) {
-              var book = '<li class="lists__item">' +
-                          '<div class="lists__item__inner">' +
-                            '<a href="'+ element.Item.itemUrl +'"class="lists__item__link" target="_blank">' +
-                              '<img src="'+ element.Item.mediumImageUrl +'" class="lists__item__img" alt="">' +
-                              '<p class="lists__item__detail">作品名：'+ element.Item.title +'</p>' +
-                              '<p class="lists__item__detail">作者：'+ element.Item.author +'</p>' +
-                              '<p class="lists__item__detail">出版社：'+ element.Item.publisherName +'</p>' +
-                            '</a>' +
-                          '</div>' +
-                          '</li>';
-              $('.lists').append(book);
-              $('.pager').show();
-              $('.btn-wrapper a:first').removeClass('disabled')
-                                       .css('pointer-events','auto');
-              $('.btn-wrapper a:last').addClass('disabled')
-                                      .css('pointer-events','none');
-            });
-            }else if(data.page>1) {
-              $.each(data.Items,function(index,element) {
-              var book = '<li class="lists__item">' +
-                          '<div class="lists__item__inner">' +
-                            '<a href="'+ element.Item.itemUrl +'"class="lists__item__link" target="_blank">' +
-                              '<img src="'+ element.Item.mediumImageUrl +'" class="lists__item__img" alt="">' +
-                              '<p class="lists__item__detail">作品名：'+ element.Item.title +'</p>' +
-                              '<p class="lists__item__detail">作者：'+ element.Item.author +'</p>' +
-                              '<p class="lists__item__detail">出版社：'+ element.Item.publisherName +'</p>' +
-                            '</a>' +
-                          '</div>' +
-                          '</li>';
-              $('.lists').append(book);
-              $('.pager').show();
-              $('.btn-wrapper a:first').removeClass('disabled')
-                                       .css('pointer-events','auto');
-              $('.btn-wrapper a:last').removeClass('disabled')
-                                      .css('pointer-events','auto');
-            });
+              $('[data-js="page-next"]').addClass('disabled')
             }
-            console.log(data.page);
-            console.log(data.pageCount)
-            $('.counter').html('<span class="counter-current">'+ data.page +'</span>/<span class="counter-all">'+ data.pageCount +'</span>');
-          })
-        });
+            }
+            
+            
+            
+            
+          }).fail(function(data) {
+            console.log(data.status);
+            errorMassage(data.status);
+          });
+        }
       });
     </script>
   </body>
