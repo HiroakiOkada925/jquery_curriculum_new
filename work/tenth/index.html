@@ -90,6 +90,7 @@
       // </div>
       $(function() {
         var wordValue = ''//空の変数を作る（グローバル変数）
+        var pageNum = null
         $('[data-js = "search-btn"]').on('click', function() {//検索
           resetResult();
           pageNum = 1;
@@ -101,25 +102,23 @@
           e.preventDefault();
           if ($('[data-js = "page-prev"]').hasClass('disabled')) {
             return false;
-          } else {
-            resetResult();
-            pageNum = pageNum - 1;
-            searchBooks();
           }
+          resetResult();
+          -- pageNum;
+          searchBooks();
         });
 
         $(document).on('click', '[data-js = "page-next"]', function(e){//後へ
           e.preventDefault();
           if ($('[data-js = "page-next"]').hasClass('disabled')) {
             return false;
-          } else {
-            resetResult();
-            pageNum = pageNum + 1;
-            searchBooks();
           }
+          resetResult();
+          ++ pageNum;
+          searchBooks();
         });
 
-        function getBooks(data) {
+        function displayBooks(data) {// 　displaybooksなどのにする
           var book = '';
           $.each(data.Items, function(index, element) {
             book = book + '<li class = "lists__item">' +
@@ -154,7 +153,7 @@
           }
         };
 
-        function makePager(data) {//pagerを作る
+        function displayPager(data) {//pagerを作る　displaypagerにする
           var pager = '<div class = "pager-parent">' +
                         '<div class = "pager" data-js = "pager">' +
                           '<div class = "counter">' +
@@ -203,8 +202,8 @@
             if(data.hits === 0) {//取得できるデータがなかった時
               displayEmpty();
             }else {
-              getBooks(data);
-              makePager(data);
+              displayBooks(data);
+              displayPager(data);
               addButtonEffect(data);
             }
           }).fail(function(data) {
